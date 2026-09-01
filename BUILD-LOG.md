@@ -1,0 +1,54 @@
+# Build log
+
+An honest, dated record of what it cost to build this in a stack I had never
+touched, using an AI-assisted workflow with review discipline. I direct and
+review; Claude Code writes most of the code. That division of labor is the
+point — this log documents what the workflow produces and what review catches,
+so the claims in my application can be checked against a real record.
+
+— Dustin Mennie
+
+---
+
+## 2026-09-01 — Hour zero
+
+Starting position, stated plainly: I have never written a line of C#. My stack
+is TypeScript / React / Next.js / PostgreSQL, all of it learned this year
+building production floor tools for the plant where I work as Material
+Manager. This machine had no .NET SDK, no Docker, and no SQL Server when the
+session started.
+
+**Session 1 (~2 hours), what landed:**
+
+- Toolchain from nothing: .NET 10 SDK (Microsoft's install script — the
+  Homebrew cask wanted root), colima + Docker CLI, SQL Server 2022 in a
+  container, verified with `sqlcmd`.
+- Solution scaffold: `Reconcile.Core` (pure domain), `Reconcile.Web`
+  (ASP.NET Core MVC), `Reconcile.Tests` (xUnit).
+- The domain: settlement lines, donation records, runs, match results.
+- The matching engine: an ordered chain of match rules — exact reference
+  first, amount+date fallback that refuses to guess when two candidates could
+  explain the same gift. Engine invariant: every imported record lands in
+  exactly one result.
+- Nine unit tests on the engine's promises. Green on first run.
+- EF Core code-first: DbContext with explicit money precision and enum-as-
+  string storage, `InitialSchema` migration generated and applied against the
+  real SQL Server container. Four tables plus migrations history, verified by
+  querying `sys.tables`.
+
+**What I noticed crossing stacks:** almost everything transferred. Entities,
+migrations, DI, routing — the concepts are the ones I already use; the syntax
+and tooling are new. C# reads like TypeScript with the option types welded
+shut. The one genuinely new muscle so far is the Microsoft tooling itself
+(`dotnet ef` needed `DOTNET_ROOT` pointed at a home-dir install — the kind of
+thing you learn once).
+
+**Review notes for this session:** design decisions I made (not the AI):
+match-rule ordering as a confidence statement; ambiguity resolving to
+unmatched rather than best-guess; mismatched amounts on a matched reference
+being a finding rather than a failure. These come from doing reconciliation
+work on real revenue data in my day job, where a guess recorded as a match is
+how trust dies.
+
+Next session: import + run pipeline in the web app, the findings UI (every
+number drills to its records), sample data generator, printable report.

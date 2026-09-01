@@ -1,0 +1,9 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/Reconcile.Core/Reconcile.Core.csproj" />
+    <Project Path="src/Reconcile.Web/Reconcile.Web.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/Reconcile.Tests/Reconcile.Tests.csproj" />
+  </Folder>
+</Solution>
