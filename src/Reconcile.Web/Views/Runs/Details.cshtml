@@ -82,7 +82,7 @@
                     <td class="money">@(d is null ? "—" : $"${d.Amount:N2}")</td>
                     <td class="mono">@(d?.ReceivedOn.ToString("MM-dd") ?? "—")</td>
                     <td class="money @(r.AmountDelta > 0 ? "delta-pos" : r.AmountDelta < 0 ? "delta-neg" : "")">
-                        @(r.AmountDelta.HasValue ? $"{(r.AmountDelta > 0 ? "+" : "")}${r.AmountDelta:N2}" : "")
+                        @(r.AmountDelta.HasValue ? $"{(r.AmountDelta > 0 ? "+" : "−")}${Math.Abs(r.AmountDelta.Value):N2}" : "")
                     </td>
                     <td class="mono dim">@r.MatchedBy</td>
                 </tr>

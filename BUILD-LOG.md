@@ -89,3 +89,35 @@ session 1's tooling hump was the hump.
 
 Next session: README with screenshots, a Bicep file for the Azure deploy
 story, repo polish, then the application materials.
+
+---
+
+## 2026-09-01 — Session 3 (~1 hour)
+
+**What landed:** the repo became presentable.
+
+- README with real screenshots (captured headless from the running app
+  against SQL Server, so they match what `dotnet run` shows), a two-minute
+  quickstart, architecture notes, and a plain "what this is not" section.
+- `infra/main.bicep`: App Service plan + Linux web app on .NET 10 + Azure SQL
+  server and database, connection string injected as an app setting so the
+  app runs unchanged from local Docker SQL Server to Azure SQL. Compiles clean
+  under Bicep CLI 0.46. Not yet deployed to a live subscription, and the file
+  says so.
+- GitHub Actions CI: restore, build, test on every push and PR. MIT license.
+  `.editorconfig` matching the conventions in CLAUDE.md.
+
+**What review caught this session:** the hero screenshot. Negative deltas
+rendered as `$-225.00` — a C# format string that put the currency symbol
+before a signed number. Fixed to `−$225.00`, app restarted, screenshots
+recaptured. The first draft of the Bicep header also claimed validation with
+a tool I hadn't run yet; I installed the Bicep CLI, compiled the template for
+real (zero diagnostics), and rewrote the claim to match what actually
+happened. Same habit as the codebase: a claim in a comment is a claim.
+
+**Totals so far:** three sessions, roughly 4.5 hours, from no SDK to a
+working, tested, documented application in a stack I had never used, with
+two code-first migrations applied against real SQL Server and every commit
+reviewed. That number is the point of this log.
+
+Next: application materials.
