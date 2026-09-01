@@ -6,6 +6,8 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddDbContext<ReconcileDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("Reconcile")));
 
+builder.Services.AddScoped<Reconcile.Web.Services.ReconciliationService>();
+
 // Add services to the container.
 builder.Services.AddControllersWithViews();
 
@@ -28,7 +30,7 @@ app.MapStaticAssets();
 
 app.MapControllerRoute(
     name: "default",
-    pattern: "{controller=Home}/{action=Index}/{id?}")
+    pattern: "{controller=Runs}/{action=Index}/{id?}")
     .WithStaticAssets();
 
 

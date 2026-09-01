@@ -52,3 +52,40 @@ how trust dies.
 
 Next session: import + run pipeline in the web app, the findings UI (every
 number drills to its records), sample data generator, printable report.
+
+---
+
+## 2026-09-01 — Session 2 (~1.5 hours)
+
+**What landed:** the whole working application.
+
+- Sample-data generator: a month of activity with deliberate, labeled defects
+  (keying errors, uncaptured refs, unrecorded web gifts, one engineered
+  ambiguity) — deterministic seed so every screenshot reproduces.
+- A test that predicts exactly how the engine must classify the generated
+  month: 100 matched, 6 probable, 3 mismatched, 6 missing in CRM, 5 missing
+  at processor. It passed on the first run, and the running app shows the
+  same numbers — generator, engine, and UI agree end to end.
+- Web pipeline: ReconciliationService (import → persist → match → persist),
+  second code-first migration (`AddImportNotes` — import problems are stored
+  on the run and shown, never swallowed).
+- MVC UI, server-rendered with one small hand-written stylesheet and ~20
+  lines of vanilla JS: runs list, upload page with a one-click sample month,
+  findings dashboard where every tile filters to the specific records behind
+  it, and a print-ready reconciliation report with totals, match summary,
+  itemized exceptions, and sign-off lines.
+- Verified in the browser against live SQL Server: sample run created, tiles
+  filtered, report rendered.
+
+**What review caught this session:** deleting the MVC template's `Models/`
+folder broke `_ViewImports.cshtml`, which still imported the namespace — ten
+identical compile errors that took one line to fix. Small, but exactly the
+kind of thing the "build before you believe" habit exists for.
+
+**Stack-crossing note:** Razor views are JSX's older cousin; EF's
+`Include/ThenInclude` is an ORM eager-load like any other; tag helpers took
+ten minutes to stop fighting. The genuinely new thing today was nothing —
+session 1's tooling hump was the hump.
+
+Next session: README with screenshots, a Bicep file for the Azure deploy
+story, repo polish, then the application materials.
