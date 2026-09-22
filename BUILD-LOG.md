@@ -1,10 +1,10 @@
 # Build log
 
 A dated record of what it cost to build this in a stack I had never touched,
-using an AI-assisted workflow with review. I direct and review; Claude Code
-writes most of the code. The log documents what that workflow produces and
-what review catches, so the claims in my application can be checked against
-a real record.
+using an AI-assisted workflow with review. Claude Code wrote the code; I
+directed it and reviewed every commit. The log documents what that workflow
+produces and what review catches, so the claims in my
+application can be checked against a real record.
 
 Dustin Mennie
 
