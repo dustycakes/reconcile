@@ -10,7 +10,7 @@ Dustin Mennie
 
 ---
 
-## 2026-09-01: Hour zero
+## 2026-09-01: Starting from zero
 
 Starting position: I have never written a line of C#. My stack is
 TypeScript / React / Next.js / PostgreSQL, all of it learned this year
@@ -18,7 +18,7 @@ building production floor tools for the plant where I work as Material
 Manager. This machine had no .NET SDK, no Docker, and no SQL Server when the
 session started.
 
-**Session 1 (~2 hours), what landed:**
+**Session 1, what landed:**
 
 - Toolchain from nothing: .NET 10 SDK (Microsoft's install script, because
   the Homebrew cask wanted root), colima + Docker CLI, SQL Server 2022 in a
@@ -55,7 +55,7 @@ number drills to its records), sample data generator, printable report.
 
 ---
 
-## 2026-09-01: Session 2 (~1.5 hours)
+## 2026-09-01: Session 2
 
 **What landed:** the whole working application.
 
@@ -92,7 +92,7 @@ story, repo polish, then the application materials.
 
 ---
 
-## 2026-09-01: Session 3 (~1 hour)
+## 2026-09-01: Session 3
 
 **What landed:** the repo became presentable.
 
@@ -115,7 +115,7 @@ a tool I hadn't run yet. I installed the Bicep CLI, compiled the template
 (zero diagnostics), and rewrote the claim to match what happened. A claim in
 a comment gets the same review as the code.
 
-**Totals so far:** three sessions, roughly 4.5 hours, from no SDK to a
+**Totals so far:** three sessions, from no SDK to a
 working, tested, documented application in a stack I had never used, with
 two code-first migrations applied against real SQL Server and every commit
 reviewed.
