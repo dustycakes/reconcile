@@ -4,10 +4,11 @@ A dated record of three sessions that took this project from an empty folder to
 a working, tested application in a stack that was new to the person directing
 it.
 
-**How it was built.** Claude Code wrote the code. Dustin Mennie set the design
-constraints, reviewed every change before it landed, and decided what shipped.
-This log records what each session produced and what review caught, so the
-claims made about the project can be checked against the work.
+**How it was built.** Claude Code proposed the project, designed it and wrote
+the code. Dustin Mennie picked the target, reviewed what landed and decided
+what shipped. The point of the exercise is the workflow, not the domain
+expertise: what a directed AI build produces in a stack the director had never
+used, and what review catches along the way.
 
 **Starting position, 2026-09-01.** No C# had been written by the author before
 this project; the working stack was TypeScript / React / Next.js / PostgreSQL,
@@ -36,13 +37,6 @@ machine had no .NET SDK, no Docker and no SQL Server when session 1 began.
   storage, `InitialSchema` migration generated and applied against the real SQL
   Server container. Four tables plus migrations history, verified by querying
   `sys.tables`.
-
-**Design constraints set at direction, not by the model:** match-rule ordering
-as a statement of confidence; ambiguity resolving to unmatched rather than a
-best guess; a mismatched amount on a matched reference counting as a finding
-rather than a failure. These come from reconciliation work on real revenue data
-in a manufacturing job, where a guess recorded as a match is how trust in the
-numbers erodes.
 
 **Next:** import and run pipeline in the web app, findings UI, sample data
 generator, printable report.
