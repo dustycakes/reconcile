@@ -1,0 +1,124 @@
+/* Reconcile — one small stylesheet, no framework.
+   Server-rendered pages; the CSS carries the whole visual identity. */
+
+:root {
+  --ground: #F6F7F5;
+  --surface: #FFFFFF;
+  --ink: #1A1F1C;
+  --ink-2: #4A544E;
+  --ink-3: #7A847D;
+  --rule: #D8DDD8;
+  --pine: #2F5D46;
+  --pine-soft: #E4EDE7;
+  --warn: #9A6212;
+  --warn-soft: #F5ECDA;
+  --bad: #A33D2A;
+  --bad-soft: #F6E7E2;
+  --mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  background: var(--ground);
+  color: var(--ink);
+  font: 15px/1.55 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+}
+
+a { color: var(--pine); }
+
+/* chrome */
+.topbar {
+  display: flex; align-items: baseline; gap: 2rem;
+  padding: 0.9rem 1.5rem;
+  background: var(--surface);
+  border-bottom: 2px solid var(--pine);
+}
+.brand {
+  font-family: var(--mono); font-weight: 700; letter-spacing: 0.18em;
+  color: var(--ink); text-decoration: none; font-size: 0.95rem;
+}
+.topbar nav { display: flex; gap: 1.25rem; }
+.topbar nav a { color: var(--ink-2); text-decoration: none; font-size: 0.9rem; }
+.topbar nav a:hover { color: var(--pine); }
+
+.container { max-width: 76rem; margin: 0 auto; padding: 2rem 1.5rem 4rem; }
+
+.foot {
+  max-width: 76rem; margin: 0 auto; padding: 1rem 1.5rem 2.5rem;
+  color: var(--ink-3); font-size: 0.8rem;
+}
+
+h1 { font-size: 1.5rem; margin: 0 0 0.35rem; }
+h2 { font-size: 1.1rem; margin: 1.8rem 0 0.6rem; }
+.sub { color: var(--ink-2); margin: 0 0 1.4rem; max-width: 60ch; }
+
+/* buttons + forms */
+.btn {
+  display: inline-block; padding: 0.5rem 1rem;
+  background: var(--pine); color: #fff; border: 0; border-radius: 3px;
+  font-size: 0.9rem; cursor: pointer; text-decoration: none;
+}
+.btn:hover { filter: brightness(1.08); }
+.btn.secondary { background: var(--surface); color: var(--pine); border: 1px solid var(--pine); }
+
+.filebox { display: block; margin: 0.9rem 0; }
+.filebox span { display: block; font-weight: 600; margin-bottom: 0.25rem; }
+.filebox small { display: block; color: var(--ink-3); font-family: var(--mono); font-size: 0.72rem; margin-top: 0.25rem; }
+
+.error { background: var(--bad-soft); border-left: 3px solid var(--bad); padding: 0.7rem 1rem; margin: 1rem 0; }
+.notes { background: var(--warn-soft); border-left: 3px solid var(--warn); padding: 0.7rem 1rem; margin: 1rem 0; white-space: pre-line; font-family: var(--mono); font-size: 0.8rem; }
+
+/* tiles */
+.tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(9.5rem, 1fr)); gap: 0.75rem; margin: 1.25rem 0; }
+.tile {
+  background: var(--surface); border: 1px solid var(--rule); border-radius: 4px;
+  padding: 0.8rem 0.9rem; cursor: pointer; text-align: left; font: inherit;
+}
+.tile[aria-pressed="true"] { outline: 2px solid var(--pine); }
+.tile .n { font-size: 1.45rem; font-weight: 700; font-variant-numeric: tabular-nums; }
+.tile .k { display: block; color: var(--ink-2); font-size: 0.78rem; }
+.tile .m { display: block; color: var(--ink-3); font-size: 0.75rem; font-variant-numeric: tabular-nums; }
+.tile.ok .n { color: var(--pine); }
+.tile.warn .n { color: var(--warn); }
+.tile.bad .n { color: var(--bad); }
+
+/* tables */
+.tablewrap { overflow-x: auto; background: var(--surface); border: 1px solid var(--rule); border-radius: 4px; }
+table { border-collapse: collapse; width: 100%; font-size: 0.85rem; }
+th {
+  text-align: left; font-family: var(--mono); font-size: 0.68rem; letter-spacing: 0.08em;
+  text-transform: uppercase; color: var(--ink-3); font-weight: 600;
+  padding: 0.6rem 0.75rem; border-bottom: 1px solid var(--rule); white-space: nowrap;
+}
+td { padding: 0.55rem 0.75rem; border-bottom: 1px solid var(--rule); vertical-align: top; }
+tr:last-child td { border-bottom: 0; }
+td.money, th.money { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
+td.mono { font-family: var(--mono); font-size: 0.78rem; white-space: nowrap; }
+td.dim, .dim { color: var(--ink-3); }
+
+.status { font-family: var(--mono); font-size: 0.7rem; padding: 0.15rem 0.45rem; border-radius: 3px; white-space: nowrap; }
+.status.Matched { background: var(--pine-soft); color: var(--pine); }
+.status.ProbableMatch { background: var(--pine-soft); color: var(--pine); outline: 1px dashed var(--pine); }
+.status.AmountMismatch { background: var(--warn-soft); color: var(--warn); }
+.status.MissingInCrm { background: var(--bad-soft); color: var(--bad); }
+.status.MissingInProcessor { background: var(--bad-soft); color: var(--bad); }
+
+.delta-pos { color: var(--warn); }
+.delta-neg { color: var(--bad); }
+
+/* report */
+.report { background: var(--surface); border: 1px solid var(--rule); border-radius: 4px; padding: 2.2rem 2.5rem; max-width: 52rem; }
+.report h1 { font-size: 1.3rem; }
+.report .meta { font-family: var(--mono); font-size: 0.75rem; color: var(--ink-2); margin-bottom: 1.6rem; }
+.report table { font-size: 0.82rem; }
+.sign { margin-top: 2.5rem; display: flex; gap: 3rem; }
+.sign div { flex: 1; border-top: 1px solid var(--ink); padding-top: 0.3rem; font-size: 0.78rem; color: var(--ink-2); }
+
+@media print {
+  .topbar, .foot, .no-print { display: none !important; }
+  body { background: #fff; }
+  .container { padding: 0; max-width: none; }
+  .report { border: 0; padding: 0; max-width: none; }
+}

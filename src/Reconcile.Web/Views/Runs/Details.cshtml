@@ -1,0 +1,120 @@
+@using Reconcile.Core.Domain
+@model ReconciliationRun
+@{
+    ViewData["Title"] = $"Run #{Model.Id}";
+    var results = Model.MatchResults;
+    int C(MatchStatus s) => results.Count(r => r.Status == s);
+    decimal Money(MatchStatus s) => results.Where(r => r.Status == s)
+        .Sum(r => r.DonationRecord?.Amount ?? r.SettlementLine?.Gross ?? 0m);
+    var findings = results.Where(r => r.Status != MatchStatus.Matched)
+        .OrderBy(r => r.Status).ThenBy(r => r.SettlementLine?.SettledOn ?? r.DonationRecord?.ReceivedOn)
+        .ToList();
+}
+
+<h1>Run #@Model.Id</h1>
+<p class="sub mono-sub">
+    <span class="dim">@Model.SettlementFileName · @Model.DonationFileName · created @Model.CreatedAtUtc.ToString("yyyy-MM-dd HH:mm") UTC</span><br />
+    @Model.SettlementLines.Count settlement lines and @Model.DonationRecords.Count donation records,
+    every one accounted for below. <a asp-action="Report" asp-route-id="@Model.Id">Printable report →</a>
+</p>
+
+@if (Model.ImportNotes is not null)
+{
+    <div class="notes"><strong>Import problems (rows kept out, shown here):</strong>
+@Model.ImportNotes</div>
+}
+
+<div class="tiles" id="tiles">
+    <button class="tile ok" data-status="Matched" aria-pressed="false">
+        <span class="n">@C(MatchStatus.Matched)</span>
+        <span class="k">Matched</span>
+        <span class="m">$@Money(MatchStatus.Matched).ToString("N2")</span>
+    </button>
+    <button class="tile ok" data-status="ProbableMatch" aria-pressed="false">
+        <span class="n">@C(MatchStatus.ProbableMatch)</span>
+        <span class="k">Probable — review</span>
+        <span class="m">$@Money(MatchStatus.ProbableMatch).ToString("N2")</span>
+    </button>
+    <button class="tile warn" data-status="AmountMismatch" aria-pressed="false">
+        <span class="n">@C(MatchStatus.AmountMismatch)</span>
+        <span class="k">Amount mismatch</span>
+        <span class="m">Δ $@results.Where(r => r.AmountDelta.HasValue).Sum(r => Math.Abs(r.AmountDelta!.Value)).ToString("N2")</span>
+    </button>
+    <button class="tile bad" data-status="MissingInCrm" aria-pressed="false">
+        <span class="n">@C(MatchStatus.MissingInCrm)</span>
+        <span class="k">Missing in CRM</span>
+        <span class="m">$@Money(MatchStatus.MissingInCrm).ToString("N2")</span>
+    </button>
+    <button class="tile bad" data-status="MissingInProcessor" aria-pressed="false">
+        <span class="n">@C(MatchStatus.MissingInProcessor)</span>
+        <span class="k">Missing at processor</span>
+        <span class="m">$@Money(MatchStatus.MissingInProcessor).ToString("N2")</span>
+    </button>
+</div>
+
+<h2>Findings — every row is a specific record to fix</h2>
+<label class="dim no-print" style="font-size:0.85rem">
+    <input type="checkbox" id="show-matched" /> also show the @C(MatchStatus.Matched) matched rows
+</label>
+
+<div class="tablewrap" style="margin-top:0.6rem">
+    <table id="results">
+        <thead>
+            <tr>
+                <th>Status</th>
+                <th>Processor ref</th><th class="money">Gross</th><th>Settled</th>
+                <th>CRM record</th><th>Donor</th><th>Fund</th><th class="money">Amount</th><th>Received</th>
+                <th class="money">Δ</th><th>Rule</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var r in findings.Concat(results.Where(x => x.Status == MatchStatus.Matched)))
+            {
+                var s = r.SettlementLine; var d = r.DonationRecord;
+                <tr data-status="@r.Status" hidden="@(r.Status == MatchStatus.Matched)">
+                    <td><span class="status @r.Status">@r.Status</span></td>
+                    <td class="mono">@(s?.ProcessorRef ?? d?.ProcessorRef ?? "—")</td>
+                    <td class="money">@(s is null ? "—" : $"${s.Gross:N2}")</td>
+                    <td class="mono">@(s?.SettledOn.ToString("MM-dd") ?? "—")</td>
+                    <td class="mono">@(d?.RecordRef ?? "—")</td>
+                    <td>@(d?.DonorName ?? "—")</td>
+                    <td class="dim">@(d?.Fund ?? "—")</td>
+                    <td class="money">@(d is null ? "—" : $"${d.Amount:N2}")</td>
+                    <td class="mono">@(d?.ReceivedOn.ToString("MM-dd") ?? "—")</td>
+                    <td class="money @(r.AmountDelta > 0 ? "delta-pos" : r.AmountDelta < 0 ? "delta-neg" : "")">
+                        @(r.AmountDelta.HasValue ? $"{(r.AmountDelta > 0 ? "+" : "−")}${Math.Abs(r.AmountDelta.Value):N2}" : "")
+                    </td>
+                    <td class="mono dim">@r.MatchedBy</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
+
+@section Scripts {
+<script>
+    // Tile click = filter the table to that status; click again to clear.
+    // The matched checkbox reveals the clean rows for spot-checking.
+    (function () {
+        const tiles = document.querySelectorAll('#tiles .tile');
+        const rows = document.querySelectorAll('#results tbody tr');
+        const showMatched = document.getElementById('show-matched');
+        let active = null;
+
+        function apply() {
+            rows.forEach(tr => {
+                const st = tr.dataset.status;
+                const matchedHidden = st === 'Matched' && !showMatched.checked && active !== 'Matched';
+                tr.hidden = matchedHidden || (active !== null && st !== active);
+            });
+            tiles.forEach(t => t.setAttribute('aria-pressed', String(t.dataset.status === active)));
+        }
+
+        tiles.forEach(t => t.addEventListener('click', () => {
+            active = active === t.dataset.status ? null : t.dataset.status;
+            apply();
+        }));
+        showMatched.addEventListener('change', apply);
+    })();
+</script>
+}

@@ -1,0 +1,38 @@
+@model List<Reconcile.Web.Controllers.RunsController.RunSummary>
+@{ ViewData["Title"] = "Runs"; }
+
+<h1>Reconciliation runs</h1>
+<p class="sub">Each run matches one settlement export against one donation export and accounts for every record on both sides.</p>
+
+@if (Model.Count == 0)
+{
+    <p>No runs yet. <a asp-action="New">Start the first one</a> — or try it with the built-in sample data.</p>
+}
+else
+{
+    <div class="tablewrap">
+        <table>
+            <thead>
+                <tr>
+                    <th>Run</th><th>Created (UTC)</th><th>Settlement file</th><th>Donation file</th>
+                    <th class="money">Lines</th><th class="money">Gifts</th><th class="money">Findings</th><th></th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var r in Model)
+                {
+                    <tr>
+                        <td class="mono">#@r.Id</td>
+                        <td class="mono">@r.CreatedAtUtc.ToString("yyyy-MM-dd HH:mm")</td>
+                        <td>@r.SettlementFile</td>
+                        <td>@r.DonationFile</td>
+                        <td class="money">@r.SettlementCount</td>
+                        <td class="money">@r.DonationCount</td>
+                        <td class="money">@(r.FindingCount == 0 ? "clean" : r.FindingCount.ToString())</td>
+                        <td><a asp-action="Details" asp-route-id="@r.Id">Open</a></td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+}

@@ -1,0 +1,38 @@
+@{ ViewData["Title"] = "New reconciliation"; }
+
+<h1>New reconciliation</h1>
+<p class="sub">
+    Upload the two exports for the same period. Rows that fail to parse are
+    reported on the run — never skipped silently.
+</p>
+
+@if (!ViewData.ModelState.IsValid)
+{
+    <div class="error">
+        @foreach (var e in ViewData.ModelState.Values.SelectMany(v => v.Errors)) { <div>@e.ErrorMessage</div> }
+    </div>
+}
+
+<form asp-action="Create" method="post" enctype="multipart/form-data">
+    <label class="filebox">
+        <span>Processor settlement export</span>
+        <input type="file" name="settlements" accept=".csv" required />
+        <small>transaction_ref, gross_amount, fee_amount, net_amount, settlement_date, batch_id</small>
+    </label>
+    <label class="filebox">
+        <span>CRM donation export</span>
+        <input type="file" name="donations" accept=".csv" required />
+        <small>Internal ID, Processor Ref, Donor, Fund, Amount, Date Received</small>
+    </label>
+    <button class="btn" type="submit">Reconcile</button>
+</form>
+
+<h2>No files handy?</h2>
+<p class="sub">
+    The built-in sample generates a month of activity with deliberate defects —
+    keying errors, uncaptured references, gifts the processor never settled —
+    so you can see what the findings look like.
+</p>
+<form asp-action="CreateSample" method="post">
+    <button class="btn secondary" type="submit">Run the sample month</button>
+</form>
