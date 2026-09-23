@@ -13,6 +13,16 @@
     </div>
 }
 
+@if (ViewData["DemoMode"] is true)
+{
+    <p class="sub">
+        <b>This hosted demo runs sample data only.</b> Uploads are switched off so
+        nothing you send is stored. To reconcile your own exports, clone the
+        repository and run it locally.
+    </p>
+}
+else
+{
 <form asp-action="Create" method="post" enctype="multipart/form-data">
     <label class="filebox">
         <span>Processor settlement export</span>
@@ -26,6 +36,7 @@
     </label>
     <button class="btn" type="submit">Reconcile</button>
 </form>
+}
 
 <h2>No files handy?</h2>
 <p class="sub">

@@ -1,8 +1,8 @@
 # Build log
 
-A dated record of three sessions that took this project from an empty folder to
+A dated record of the sessions that took this project from an empty folder to
 a working, tested application in a stack that was new to the person directing
-it.
+it, and then to a hosted demo.
 
 **How it was built.** Claude Code proposed the project, designed it and wrote
 the code. Dustin Mennie picked the target, reviewed what landed and decided
@@ -100,3 +100,40 @@ the same review as the code.
 **Totals:** three sessions, from no SDK to a working, tested, documented
 application, with two code-first migrations applied against real SQL Server and
 every commit reviewed.
+
+---
+
+## 2026-09-23: Session 4 — a demo a stranger can load
+
+**Why:** a repository is a record of a build, not a demo. A reviewer will not
+install SQL Server to see an applicant's work. The app already generated its
+own sample month, so it could run in public with no uploads at all.
+
+**Landed:**
+
+- Demo mode (`DemoOptions`, bound from configuration): the upload form is
+  hidden, `Create` refuses uploads with 403, and after each sample run only the
+  newest twelve runs are kept, deleted through the run so the cascade removes
+  lines, records and results in one statement.
+- Migrations on startup, behind a setting, with a two-minute retry loop while
+  SQL Server comes up beside the app. Forwarded-header handling so the app
+  honours the tunnel's scheme.
+- A multi-stage `Dockerfile` (restore, build, `test` stage, publish, runtime)
+  and a `compose.yaml` that runs SQL Server Express with a memory cap next to
+  the app, bound to localhost only. The suite ran inside the SDK image on a
+  machine with no .NET SDK installed: 12 passed.
+- Hosted at reconcile.mennie.dev: an always-on Linux box at home, Docker
+  Compose with restart policies, a Cloudflare Tunnel outbound to Cloudflare so
+  nothing on the home network is opened inbound. Azure remains the deploy story
+  the Bicep describes; it is still not deployed, and the README still says so.
+
+**What review caught:** the exception handler pointed at `/Home/Error`, and no
+Home controller exists, so any server error would have produced a 404 instead
+of an error page. The handler now points at a real action with a view. The
+first draft of the trimming query removed runs by creation time, which the
+sample generator sets identically within a second; ordering by id made it
+deterministic.
+
+**Verified:** sample runs created through the running container and the
+findings page rendered the predicted classification; an upload with a valid
+anti-forgery token returned 403 in demo mode.

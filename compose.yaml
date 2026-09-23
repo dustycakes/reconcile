@@ -1,0 +1,31 @@
+# Reconcile with its SQL Server, two containers.
+#   MSSQL_SA_PASSWORD=... docker compose up -d      (or put it in a .env file)
+# The app applies its migrations on start and runs in demo mode: sample data
+# only, no uploads. Unset Reconcile__DemoMode to allow uploads.
+services:
+  sql:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    environment:
+      ACCEPT_EULA: "Y"
+      MSSQL_SA_PASSWORD: ${MSSQL_SA_PASSWORD:?set MSSQL_SA_PASSWORD}
+      MSSQL_PID: Express
+      MSSQL_MEMORY_LIMIT_MB: "1536"
+    volumes:
+      - sql-data:/var/opt/mssql
+    restart: unless-stopped
+
+  web:
+    build: .
+    depends_on:
+      - sql
+    environment:
+      ConnectionStrings__Reconcile: "Server=sql,1433;Database=Reconcile;User Id=sa;Password=${MSSQL_SA_PASSWORD};TrustServerCertificate=True"
+      Reconcile__DemoMode: ${RECONCILE_DEMO_MODE:-true}
+      Reconcile__MigrateOnStartup: "true"
+      Logging__LogLevel__Microsoft.EntityFrameworkCore.Database.Command: Warning
+    ports:
+      - "${RECONCILE_BIND:-127.0.0.1}:${RECONCILE_PORT:-5210}:8080"
+    restart: unless-stopped
+
+volumes:
+  sql-data:
