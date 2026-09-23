@@ -7,6 +7,12 @@ to fix.
 
 ![Findings dashboard: 100 matched, 6 probable, 3 amount mismatches, 6 missing in CRM, 5 missing at processor](docs/findings.png)
 
+**Live demo: [reconcile.mennie.dev](https://reconcile.mennie.dev).** Click
+*New reconciliation*, then *Run the sample month*. The hosted copy runs sample
+data only; uploads are switched off there. It is self-hosted on a small Linux
+box behind a Cloudflare Tunnel, so the first request after a quiet spell can
+take a few seconds.
+
 Built in C# on modern .NET (ASP.NET Core MVC, EF Core code-first, SQL Server)
 as a working demonstration of AI-assisted development with review discipline.
 The stack was new to me on day one; [BUILD-LOG.md](BUILD-LOG.md) records what
@@ -40,7 +46,19 @@ conventions file every AI coding session loads first.
 
 ## Try it in two minutes
 
-You need the .NET 10 SDK and Docker (or colima).
+With Docker only:
+
+```sh
+MSSQL_SA_PASSWORD='Reconcile!Dev2026' docker compose up -d
+```
+
+Then open http://localhost:5210. The app image builds from the `Dockerfile`
+(the test suite runs in the `test` stage: `docker build --target test .`),
+SQL Server starts beside it, and migrations apply on first start. Compose
+defaults to demo mode (sample data only); set `RECONCILE_DEMO_MODE=false` to
+allow uploads.
+
+With the .NET 10 SDK, against a SQL Server container:
 
 ```sh
 docker run -d --name reconcile-sql -e ACCEPT_EULA=Y \

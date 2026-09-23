@@ -75,6 +75,14 @@ Dev connection string lives in `appsettings.Development.json`. The password
 above is a local throwaway for a disposable container; nothing real is behind
 it.
 
+Container route (`Dockerfile` + `compose.yaml`): `docker compose up -d` builds
+the app image, starts SQL Server Express beside it and applies migrations on
+start (`Reconcile__MigrateOnStartup`). `docker build --target test .` runs the
+suite inside the SDK image. `Reconcile__DemoMode=true` (compose default) hides
+the upload form, refuses uploads with 403 and keeps only the newest runs; the
+public demo at reconcile.mennie.dev runs this way. `DemoOptions.cs` holds the
+settings.
+
 ## Review discipline
 
 AI-generated code ships only after a human pass that asks, at minimum: does
