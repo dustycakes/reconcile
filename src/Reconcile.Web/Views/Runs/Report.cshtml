@@ -1,4 +1,4 @@
-@using Reconcile.Core.Domain
+@using Reconcile.Core.Reporting
 @model ReconciliationRun
 @{
     ViewData["Title"] = $"Report — run #{Model.Id}";
@@ -9,8 +9,17 @@
     var exceptions = results
         .Where(r => r.Status is MatchStatus.AmountMismatch or MatchStatus.MissingInCrm or MatchStatus.MissingInProcessor)
         .OrderBy(r => r.Status).ToList();
+    var pending = results.Where(r => r.Status == MatchStatus.ProbableMatch).ToList();
     var from = lines.Min(l => l.SettledOn); var to = lines.Max(l => l.SettledOn);
-    var reconciledPct = results.Count == 0 ? 0 : 100.0 * (C(MatchStatus.Matched) + C(MatchStatus.ProbableMatch)) / results.Count;
+    var bridge = ReconciliationBridge.From(lines, gifts, results);
+
+    // Counted in records (settlement lines + gifts), not results: a matched pair is two records.
+    var totalRecords = lines.Count + gifts.Count;
+    var onRef = C(MatchStatus.Matched) * 2;
+    var onAmountDate = C(MatchStatus.ProbableMatch) * 2;
+    var exceptionRecords = C(MatchStatus.AmountMismatch) * 2 + C(MatchStatus.MissingInCrm) + C(MatchStatus.MissingInProcessor);
+    string Pct(int n) => totalRecords == 0 ? "0.0" : (100.0 * n / totalRecords).ToString("N1");
+    string Signed(decimal v) => $"{(v < 0 ? "−" : "+")}${Math.Abs(v):N2}";
 }
 
 <p class="no-print" style="margin-bottom:1rem">
@@ -29,25 +38,68 @@
     <h2>Totals</h2>
     <table>
         <tbody>
-            <tr><td>Processor: settled gross</td><td class="money">$@lines.Sum(l => l.Gross).ToString("N2")</td></tr>
+            <tr><td>Processor: settled gross</td><td class="money">$@bridge.SettledGross.ToString("N2")</td></tr>
             <tr><td class="dim">Processor: fees withheld</td><td class="money dim">−$@lines.Sum(l => l.Fee).ToString("N2")</td></tr>
             <tr><td>Processor: net deposited</td><td class="money">$@lines.Sum(l => l.Net).ToString("N2")</td></tr>
-            <tr><td>CRM: gifts recorded</td><td class="money">$@gifts.Sum(g => g.Amount).ToString("N2")</td></tr>
+            <tr><td>CRM: gifts recorded</td><td class="money">$@bridge.CrmRecorded.ToString("N2")</td></tr>
+        </tbody>
+    </table>
+
+    <h2>From settled gross to the CRM total</h2>
+    @{ var gap = bridge.CrmRecorded - bridge.SettledGross; }
+    <p class="sub">
+        @(gap == 0 ? "The CRM total equals what the processor settled." : $"The CRM records ${Math.Abs(gap):N2} {(gap < 0 ? "less" : "more")} than the processor settled.")
+        Each line below is a group of findings; together they account for the gap to the cent.
+    </p>
+    <table class="bridge">
+        <tbody>
+            <tr><td>Processor: settled gross</td><td class="money">$@bridge.SettledGross.ToString("N2")</td></tr>
+            <tr><td>Less: settled, never recorded in the CRM (@C(MatchStatus.MissingInCrm))</td><td class="money">−$@bridge.SettledNotInCrm.ToString("N2")</td></tr>
+            <tr><td>Add: recorded in the CRM, never settled (@C(MatchStatus.MissingInProcessor))</td><td class="money">+$@bridge.RecordedNotSettled.ToString("N2")</td></tr>
+            <tr><td>Add: net amount differences on matched references (@C(MatchStatus.AmountMismatch))</td><td class="money">@Signed(bridge.NetAmountDifferences)</td></tr>
+            <tr class="total"><td>Explained CRM total</td><td class="money">$@bridge.Explained.ToString("N2")</td></tr>
+            <tr><td>CRM: gifts recorded</td><td class="money">$@bridge.CrmRecorded.ToString("N2")</td></tr>
+            <tr class="@(bridge.Unexplained == 0 ? "tied" : "untied")">
+                <td>Unexplained difference</td><td class="money">$@bridge.Unexplained.ToString("N2")</td>
+            </tr>
         </tbody>
     </table>
 
     <h2>Match summary</h2>
     <table>
-        <thead><tr><th>Outcome</th><th class="money">Records</th></tr></thead>
+        <thead><tr><th>Outcome</th><th class="money">Results</th></tr></thead>
         <tbody>
             <tr><td>Matched on processor reference</td><td class="money">@C(MatchStatus.Matched)</td></tr>
-            <tr><td>Probable match (amount + date) — review recommended</td><td class="money">@C(MatchStatus.ProbableMatch)</td></tr>
+            <tr><td>Probable match (amount + date), review recommended</td><td class="money">@C(MatchStatus.ProbableMatch)</td></tr>
             <tr><td>Amount mismatch on a matched reference</td><td class="money">@C(MatchStatus.AmountMismatch)</td></tr>
             <tr><td>Settled by processor, not recorded in CRM</td><td class="money">@C(MatchStatus.MissingInCrm)</td></tr>
             <tr><td>Recorded in CRM, never settled by processor</td><td class="money">@C(MatchStatus.MissingInProcessor)</td></tr>
         </tbody>
     </table>
-    <p class="sub" style="margin-top:0.6rem">@reconciledPct.ToString("N1")% of records reconciled without exception.</p>
+    <p class="sub" style="margin-top:0.6rem">
+        Of @totalRecords records (@lines.Count settlement lines, @gifts.Count gifts):
+        @onRef (@Pct(onRef)%) matched on reference; @onAmountDate (@Pct(onAmountDate)%) paired on amount and date,
+        pending review; @exceptionRecords (@Pct(exceptionRecords)%) are exceptions.
+    </p>
+
+    @{
+        void Row(MatchResult r)
+        {
+            var s = r.SettlementLine; var d = r.DonationRecord;
+            <tr class="has-note">
+                <td><span class="status @r.Status">@r.Status.Label()</span></td>
+                <td class="mono">@(s?.ProcessorRef ?? d?.ProcessorRef ?? "—") @(d is null ? "" : $"/ {d.RecordRef}")</td>
+                <td>@(d?.DonorName ?? "—")</td>
+                <td class="money">
+                    @(s is null ? "" : $"settled ${s.Gross:N2}")
+                    @(s != null && d != null ? " · " : "")
+                    @(d is null ? "" : $"recorded ${d.Amount:N2}")
+                </td>
+                <td class="mono">@(s?.SettledOn.ToString("MM-dd") ?? "") @(d is null ? "" : $"/ {d.ReceivedOn:MM-dd}")</td>
+            </tr>
+            <tr class="note-row"><td colspan="5">@r.Note</td></tr>
+        }
+    }
 
     <h2>Exceptions requiring action (@exceptions.Count)</h2>
     <table>
@@ -55,23 +107,22 @@
             <tr><th>Type</th><th>Processor ref / CRM record</th><th>Donor</th><th class="money">Amounts</th><th>Dates</th></tr>
         </thead>
         <tbody>
-            @foreach (var r in exceptions)
-            {
-                var s = r.SettlementLine; var d = r.DonationRecord;
-                <tr>
-                    <td><span class="status @r.Status">@r.Status</span></td>
-                    <td class="mono">@(s?.ProcessorRef ?? d?.ProcessorRef ?? "—") @(d is null ? "" : $"/ {d.RecordRef}")</td>
-                    <td>@(d?.DonorName ?? "—")</td>
-                    <td class="money">
-                        @(s is null ? "" : $"settled ${s.Gross:N2}")
-                        @(s != null && d != null ? " · " : "")
-                        @(d is null ? "" : $"recorded ${d.Amount:N2}")
-                    </td>
-                    <td class="mono">@(s?.SettledOn.ToString("MM-dd") ?? "") @(d is null ? "" : $"/ {d.ReceivedOn:MM-dd}")</td>
-                </tr>
-            }
+            @foreach (var r in exceptions) { Row(r); }
         </tbody>
     </table>
+
+    @if (pending.Count > 0)
+    {
+        <h2>Pending review (@pending.Count)</h2>
+        <table>
+            <thead>
+                <tr><th>Type</th><th>Processor ref / CRM record</th><th>Donor</th><th class="money">Amounts</th><th>Dates</th></tr>
+            </thead>
+            <tbody>
+                @foreach (var r in pending) { Row(r); }
+            </tbody>
+        </table>
+    }
 
     <div class="sign">
         <div>Prepared by</div>

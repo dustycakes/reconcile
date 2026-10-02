@@ -1,21 +1,81 @@
+@using Reconcile.Core.SampleData
 @model List<Reconcile.Web.Controllers.RunsController.RunSummary>
-@{ ViewData["Title"] = "Runs"; }
-
-<h1>Reconciliation runs</h1>
-<p class="sub">Each run matches one settlement export against one donation export and accounts for every record on both sides.</p>
-
-@if (Model.Count == 0)
-{
-    <p>No runs yet. <a asp-action="New">Start the first one</a> — or try it with the built-in sample data.</p>
+@{
+    ViewData["Title"] = "Overview";
+    var demo = ViewData["DemoMode"] is true;
+    var latest = Model.FirstOrDefault();
 }
-else
+
+<section class="hero">
+    <h1>Every dollar a donor gives should be findable in both systems.</h1>
+    <p class="sub">
+        Reconcile matches a payment processor's settlement export against the CRM's
+        donation records, one record at a time, and names each record that needs
+        fixing. Every record on both sides lands in exactly one result. When two
+        settlements could explain one gift, it says so instead of picking.
+    </p>
+    <div class="actions">
+        <form asp-action="CreateSample" method="post">
+            <button class="btn" type="submit">Run the sample month</button>
+        </form>
+        @if (!demo)
+        {
+            <a class="btn secondary" asp-action="New">Reconcile your own exports</a>
+        }
+        @if (latest is not null)
+        {
+            <a asp-action="Details" asp-route-id="@latest.Id">or open the latest run (#@latest.Id) →</a>
+        }
+    </div>
+</section>
+
+<h2>What the sample month contains</h2>
+<p class="sub">
+    August 2026 of invented gifts, with defects planted on purpose. This is the
+    answer key; the run page shows the engine reaching it, and a test holds the
+    two together.
+</p>
+<div class="tablewrap">
+    <table>
+        <thead>
+            <tr><th>Planted</th><th class="money">Settlements</th><th class="money">Gifts</th><th>Should land as</th></tr>
+        </thead>
+        <tbody>
+            @foreach (var p in SampleDataGenerator.AnswerKey)
+            {
+                <tr>
+                    <td>@p.What</td>
+                    <td class="money">@p.Settlements</td>
+                    <td class="money">@p.Gifts</td>
+                    <td>@p.ShouldLandAs</td>
+                </tr>
+            }
+            <tr class="total">
+                <td>Total</td>
+                <td class="money">@SampleDataGenerator.AnswerKey.Sum(p => p.Settlements)</td>
+                <td class="money">@SampleDataGenerator.AnswerKey.Sum(p => p.Gifts)</td>
+                <td></td>
+            </tr>
+        </tbody>
+    </table>
+</div>
+
+@if (Model.Count > 0)
 {
+    <h2>Recent runs</h2>
+    @if (demo)
+    {
+        <p class="sub">
+            The sample comes from a fixed seed, so every sample run finds the same
+            things. This hosted copy keeps the newest @ViewData["KeepRuns"].
+        </p>
+    }
     <div class="tablewrap">
         <table>
             <thead>
                 <tr>
-                    <th>Run</th><th>Created (UTC)</th><th>Settlement file</th><th>Donation file</th>
-                    <th class="money">Lines</th><th class="money">Gifts</th><th class="money">Findings</th><th></th>
+                    <th>Run</th><th>Created (UTC)</th><th>Period</th><th>Files</th>
+                    <th class="money">Settlements</th><th class="money">Gifts</th><th class="money">Findings</th><th></th>
                 </tr>
             </thead>
             <tbody>
@@ -24,8 +84,8 @@ else
                     <tr>
                         <td class="mono">#@r.Id</td>
                         <td class="mono">@r.CreatedAtUtc.ToString("yyyy-MM-dd HH:mm")</td>
-                        <td>@r.SettlementFile</td>
-                        <td>@r.DonationFile</td>
+                        <td class="mono">@(r.PeriodFrom is null ? "—" : $"{r.PeriodFrom:yyyy-MM-dd} to {r.PeriodTo:yyyy-MM-dd}")</td>
+                        <td class="dim">@r.SettlementFile · @r.DonationFile</td>
                         <td class="money">@r.SettlementCount</td>
                         <td class="money">@r.DonationCount</td>
                         <td class="money">@(r.FindingCount == 0 ? "clean" : r.FindingCount.ToString())</td>

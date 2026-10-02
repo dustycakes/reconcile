@@ -56,6 +56,9 @@ public class MatchEngine
             DonationRecord = d,
         }));
 
+        var window = _rules.OfType<AmountDateRule>().FirstOrDefault()?.WindowDays ?? AmountDateRule.DefaultWindowDays;
+        FindingNotes.Annotate(results, window);
+
         return results;
     }
 }

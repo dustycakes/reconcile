@@ -23,12 +23,15 @@ public class RunsController : Controller
     public async Task<IActionResult> Index()
     {
         var runs = await _db.Runs
-            .OrderByDescending(r => r.CreatedAtUtc)
+            .OrderByDescending(r => r.Id)
             .Select(r => new RunSummary(
                 r.Id, r.CreatedAtUtc, r.SettlementFileName, r.DonationFileName,
+                r.SettlementLines.Min(l => (DateOnly?)l.SettledOn), r.SettlementLines.Max(l => (DateOnly?)l.SettledOn),
                 r.SettlementLines.Count, r.DonationRecords.Count,
                 r.MatchResults.Count(m => m.Status != MatchStatus.Matched && m.Status != MatchStatus.ProbableMatch)))
             .ToListAsync();
+        ViewData["DemoMode"] = _demo.DemoMode;
+        ViewData["KeepRuns"] = _demo.KeepRuns;
         return View(runs);
     }
 
@@ -88,8 +91,12 @@ public class RunsController : Controller
         return run is null ? NotFound() : View(run);
     }
 
+    // Lines and records load in their own right, not only through results, so the
+    // report's bridge would show a gap if a record had no result.
     private async Task<ReconciliationRun?> LoadRun(int id) =>
         await _db.Runs
+            .Include(r => r.SettlementLines)
+            .Include(r => r.DonationRecords)
             .Include(r => r.MatchResults).ThenInclude(m => m.SettlementLine)
             .Include(r => r.MatchResults).ThenInclude(m => m.DonationRecord)
             .AsSplitQuery()
@@ -97,5 +104,5 @@ public class RunsController : Controller
 
     public record RunSummary(
         int Id, DateTime CreatedAtUtc, string SettlementFile, string DonationFile,
-        int SettlementCount, int DonationCount, int FindingCount);
+        DateOnly? PeriodFrom, DateOnly? PeriodTo, int SettlementCount, int DonationCount, int FindingCount);
 }

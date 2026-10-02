@@ -14,6 +14,9 @@ public sealed class DemoOptions
     /// <summary>Apply pending EF migrations when the app starts, retrying while SQL Server comes up.</summary>
     public bool MigrateOnStartup { get; set; }
 
-    /// <summary>In demo mode, keep only this many most recent runs.</summary>
-    public int KeepRuns { get; set; } = 12;
+    /// <summary>
+    /// In demo mode, keep only this many most recent runs. Sample runs come from a
+    /// fixed seed and repeat exactly, so a long history adds nothing.
+    /// </summary>
+    public int KeepRuns { get; set; } = 3;
 }

@@ -42,6 +42,12 @@ public class MatchResult
     /// <summary>Donation amount minus settlement gross, when both sides exist.</summary>
     public decimal? AmountDelta { get; set; }
 
+    /// <summary>
+    /// Why this result landed where it did, and what a reviewer should check.
+    /// Null for clean matches; every other result carries one.
+    /// </summary>
+    public string? Note { get; set; }
+
     public int ReconciliationRunId { get; set; }
     public ReconciliationRun? ReconciliationRun { get; set; }
 }

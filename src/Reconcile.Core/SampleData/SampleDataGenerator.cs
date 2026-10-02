@@ -27,6 +27,24 @@ public static class SampleDataGenerator
 
     public record Generated(List<SettlementLine> Settlements, List<DonationRecord> Donations);
 
+    /// <summary>One kind of planted defect and the outcome the engine should give it.</summary>
+    public record Planted(string What, int Settlements, int Gifts, string ShouldLandAs);
+
+    /// <summary>
+    /// The answer key for <see cref="Generate"/>, shown on the demo's front page.
+    /// A test holds it to the generator and the engine, so it cannot drift.
+    /// </summary>
+    public static readonly IReadOnlyList<Planted> AnswerKey =
+    [
+        new("Clean gifts: reference captured, amounts agree", 100, 100, "Matched"),
+        new("Phone and mail gifts whose reference was never keyed", 6, 6, "Probable match, for review"),
+        new("Keying errors: right reference, wrong amount", 3, 3, "Amount mismatch"),
+        new("Web gifts that never reached the CRM", 4, 0, "Missing in CRM"),
+        new("Gifts keyed with a mistyped reference", 0, 3, "Missing at processor"),
+        new("A check that never cleared", 0, 1, "Missing at processor"),
+        new("One $200 gift, two $200 settlements a day apart", 2, 1, "Left unpaired on purpose: all three are findings"),
+    ];
+
     public static Generated Generate(int seed = 42)
     {
         var rng = new Random(seed);

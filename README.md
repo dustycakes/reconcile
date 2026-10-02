@@ -8,7 +8,7 @@ to fix.
 ![Findings dashboard: 100 matched, 6 probable, 3 amount mismatches, 6 missing in CRM, 5 missing at processor](docs/findings.png)
 
 **Live demo: [reconcile.mennie.dev](https://reconcile.mennie.dev).** Click
-*New reconciliation*, then *Run the sample month*. The hosted copy runs sample
+*Run the sample month*. The hosted copy runs sample
 data only; uploads are switched off there. It is self-hosted on a small Linux
 box behind a Cloudflare Tunnel, so the first request after a quiet spell can
 take a few seconds.
@@ -34,13 +34,20 @@ conventions file every AI coding session loads first.
 3. **Account for everything.** Every settlement line and every donation record
    lands in one result and only one: matched, probable, amount mismatch, missing in
    CRM, or missing at processor. The invariant is enforced by test.
+   Every result other than a clean match carries a note saying why it landed
+   there and what to check. When two settlements fit one gift equally well,
+   all three records say so and name each other.
 4. **Drill down.** Each tile on the findings page filters to the records behind
    it.
 
 ![The same run filtered to settlements the CRM never recorded](docs/findings-filtered.png)
 
 5. **Report.** A print-ready reconciliation: totals on both sides, fees
-   withheld, match summary, itemized exceptions, sign-off lines.
+   withheld, a bridge from the processor's settled gross to the CRM total
+   that ties to the cent, match summary, itemized exceptions with their
+   notes, sign-off lines. The bridge's two ends come from the imported rows
+   and its steps from the findings, so a dropped record would show up as an
+   unexplained difference.
 
 ![Print-ready reconciliation report](docs/report.png)
 
@@ -77,8 +84,12 @@ engineered ambiguity) so the findings page has something to show. Every
 donor in it is invented.
 
 `dotnet test` runs the suite: the matching engine's promises, CSV import
-behavior, and a test that predicts how the engine classifies the
-sample month (100 / 6 / 3 / 6 / 5).
+behavior, a test that predicts how the engine classifies the
+sample month (100 / 6 / 3 / 6 / 5), the finding notes, and the bridge tying
+out to the cent. The front page shows the sample's answer key; a test holds
+it to the generator and the engine.
+
+![Front page: what the tool is for, and the sample month's answer key](docs/overview.png)
 
 ## Architecture
 

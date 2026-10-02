@@ -12,11 +12,16 @@ namespace Reconcile.Core.Matching;
 /// </summary>
 public class AmountDateRule : IMatchRule
 {
+    public const int DefaultWindowDays = 3;
+
     private readonly int _windowDays;
 
-    public AmountDateRule(int windowDays = 3) => _windowDays = windowDays;
+    public AmountDateRule(int windowDays = DefaultWindowDays) => _windowDays = windowDays;
 
     public string Name => "amount-date";
+
+    /// <summary>How many days apart a gift and a settlement may be and still pair.</summary>
+    public int WindowDays => _windowDays;
 
     public IEnumerable<MatchResult> Claim(
         IReadOnlyList<SettlementLine> unmatchedSettlements,

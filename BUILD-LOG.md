@@ -137,3 +137,46 @@ deterministic.
 **Verified:** sample runs created through the running container and the
 findings page rendered the predicted classification; an upload with a valid
 anti-forgery token returned 403 in demo mode.
+
+---
+
+## 2026-10-02: Session 5 — a demo that explains itself
+
+**Why:** reviewing the live demo as a stranger would. The front page was a
+list of identical runs (the sample uses a fixed seed, by design) with no
+explanation. The engine's best decision, refusing to pair one $200 gift with
+either of two $200 settlements, looked the same on screen as any missing
+record. Status chips showed C# enum names. The report printed both totals but
+never explained the $735.00 between them.
+
+**Landed:**
+
+- A front page that says what the tool is for, runs the sample in one click,
+  and shows the sample's answer key: each planted defect and where it should
+  land. The key lives in the generator, and a test holds it to the generator
+  and the engine. Demo mode keeps the newest three runs instead of twelve.
+- A note on every finding (`FindingNotes`), written after the rule chain so
+  it can see both sides: the ambiguous gift names both settlements, and each
+  settlement names the gift and its rival. Third code-first migration,
+  `AddResultNote`, adds the column (nvarchar 400; a note lists at most three
+  references so a busy day cannot overflow it).
+- A bridge on the report (`ReconciliationBridge`): settled gross, less
+  settlements the CRM never recorded, plus gifts the processor never settled,
+  plus net amount differences, equals the CRM total. For the sample month:
+  32,836.00 − 1,335.00 + 393.00 + 207.00 = 32,101.00, unexplained 0.00.
+- Plain-language status labels; the mismatch tile shows the net difference
+  (+$207.00) instead of the sum of absolute differences; the report's
+  percentages count records (229) rather than results (120).
+- Screenshots recaptured from the running app.
+
+**What review caught** (the model, while writing the bridge; Dustin's review of
+this session is still to come): the report loaded settlement lines and gifts only
+through their results, so the bridge's "unexplained" check could never have
+failed: a record without a result would not have been loaded at all. The run
+query now loads lines and gifts in their own right, and a test confirms the
+bridge stops tying out when results go missing. The first wording of the
+probable-match note ("the same amount 1 day apart") was rewritten.
+
+**Verified:** 18 tests green (6 new). Migration applied against SQL Server in
+Docker; sample run created through the browser in demo mode; run page,
+filters and report checked at desktop and phone widths.

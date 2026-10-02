@@ -40,7 +40,11 @@ record appears in exactly one result — is enforced by test
   would trade this for convenience, stop and flag it.
 - **Findings are records, not counts.** Any surface that reports a problem
   links to the specific rows behind it. A number you can't act on is not
-  information.
+  information. Every result other than a clean match carries a `Note`
+  (`FindingNotes.cs`) saying why it landed there and what to check.
+- **The report ties out.** `ReconciliationBridge` walks settled gross to the
+  CRM total through the findings; its unexplained difference is zero, and a
+  test (`Bridge_TiesSettledGrossToCrmTotal_ToTheCent`) keeps it there.
 - **Money is `decimal` with explicit precision** (12,2 in the schema). Never
   float. Deltas are donation-side minus processor-side, consistently.
 - **Migrations:** EF code-first, one migration per schema change, reviewed

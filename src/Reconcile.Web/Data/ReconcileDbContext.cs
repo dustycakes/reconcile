@@ -39,6 +39,7 @@ public class ReconcileDbContext : DbContext
             e.Property(p => p.MatchedBy).HasMaxLength(32);
             e.Property(p => p.Status).HasConversion<string>().HasMaxLength(24);
             e.Property(p => p.AmountDelta).HasPrecision(12, 2);
+            e.Property(p => p.Note).HasMaxLength(400);
             e.HasIndex(p => new { p.ReconciliationRunId, p.Status });
 
             // A result may reference a line, a record, or both. Restrict (not
