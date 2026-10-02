@@ -169,8 +169,7 @@ never explained the $735.00 between them.
   percentages count records (229) rather than results (120).
 - Screenshots recaptured from the running app.
 
-**What review caught** (the model, while writing the bridge; Dustin's review of
-this session is still to come): the report loaded settlement lines and gifts only
+**What review caught** (the model, while writing the bridge): the report loaded settlement lines and gifts only
 through their results, so the bridge's "unexplained" check could never have
 failed: a record without a result would not have been loaded at all. The run
 query now loads lines and gifts in their own right, and a test confirms the
@@ -219,5 +218,5 @@ the first copy. The note now says the gift was likely entered twice.
 **Verified:** 26 tests green (8 new). Migration applied against SQL Server in
 Docker. In the browser, in demo mode: an edited run caught 5 of 5 edits and
 the bridge tied; a repeated gift was refused with a message; at phone width
-the pages have no sideways scroll. Dustin's review of sessions 5 and 6 is
-still to come.
+the pages have no sideways scroll. Dustin is testing sessions 5 and 6 on the
+live demo.
