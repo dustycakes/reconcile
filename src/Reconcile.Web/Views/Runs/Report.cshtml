@@ -45,7 +45,7 @@
         </tbody>
     </table>
 
-    <h2>From settled gross to the CRM total</h2>
+    <h2 id="bridge">From settled gross to the CRM total</h2>
     @{ var gap = bridge.CrmRecorded - bridge.SettledGross; }
     <p class="sub">
         @(gap == 0 ? "The CRM total equals what the processor settled." : $"The CRM records ${Math.Abs(gap):N2} {(gap < 0 ? "less" : "more")} than the processor settled.")

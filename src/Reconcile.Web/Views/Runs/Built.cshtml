@@ -1,0 +1,87 @@
+@{
+    ViewData["Title"] = "How it was built";
+    const string Repo = "https://github.com/dustycakes/reconcile";
+}
+
+<h1>How it was built</h1>
+<p class="sub">
+    Reconcile is a demonstration of AI-assisted development with review
+    discipline. Claude Code proposed the project, designed it and wrote the
+    code. Dustin Mennie picked the target, reviewed what landed and decided what
+    shipped. No C# had been written by the author before the first session, on
+    2026-09-01.
+</p>
+
+<h2>A conventions file, and something that checks each rule</h2>
+<p class="sub">
+    Every AI session starts by reading <a href="@Repo/blob/main/CLAUDE.md">CLAUDE.md</a>:
+    what the project is, how it is laid out, and the rules its code is held to.
+    A rule only counts if something checks it, so each one below names what does.
+</p>
+<div class="tablewrap">
+    <table class="rules">
+        <thead><tr><th>Rule in CLAUDE.md</th><th>What holds it</th></tr></thead>
+        <tbody>
+            <tr>
+                <td>Nothing is dropped silently</td>
+                <td><code>EveryInputAppearsInExactlyOneResult</code>, <code>Import_CollectsBadRows_InsteadOfDroppingThemSilently</code></td>
+            </tr>
+            <tr>
+                <td>Ambiguous matches are left unmatched, never guessed</td>
+                <td><code>AmountDate_TwoCandidates_ClaimsNeither</code>, <code>AmbiguousGift_NamesBothSettlements_AndEachSettlementNamesTheGift</code></td>
+            </tr>
+            <tr>
+                <td>Findings are records, not counts</td>
+                <td><code>EveryFinding_SaysWhy_AndCleanMatchesStayQuiet</code>; every tile on a run filters to the rows behind it</td>
+            </tr>
+            <tr>
+                <td>The report ties out</td>
+                <td><code>Bridge_TiesSettledGrossToCrmTotal_ToTheCent</code>, <code>Bridge_StopsTyingOut_WhenAResultGoesMissing</code></td>
+            </tr>
+            <tr>
+                <td>Strong rules claim before weak ones</td>
+                <td><code>StrongRuleRunsBeforeWeakRule</code></td>
+            </tr>
+            <tr>
+                <td>The demo's own claims are true</td>
+                <td><code>AnswerKey_AgreesWithTheGeneratorAndTheEngine</code>, <code>EachKindOfEdit_LandsWhereItIsPredicted</code></td>
+            </tr>
+            <tr>
+                <td>Money is <code>decimal(12,2)</code>, never float</td>
+                <td>Declared on every money column in <code>ReconcileDbContext</code>; read in each migration before it is applied</td>
+            </tr>
+            <tr>
+                <td>One migration per schema change; never edit an applied one</td>
+                <td>Four migrations, each additive: <code>InitialSchema</code>, <code>AddImportNotes</code>, <code>AddResultNote</code>, <code>AddRunScenario</code></td>
+            </tr>
+        </tbody>
+    </table>
+</div>
+
+<h2>What checking caught</h2>
+<p class="sub">
+    The useful record of an AI-assisted build is what went wrong and how it was
+    found. From the <a href="@Repo/blob/main/BUILD-LOG.md">build log</a>:
+</p>
+<div class="tablewrap">
+    <table class="caught">
+        <thead><tr><th>Date</th><th>What was wrong</th><th>How it was found</th></tr></thead>
+        <tbody>
+            <tr><td class="mono">2026-09-01</td><td>Removing the template's unused <code>Models</code> folder broke an import in every view: ten identical compile errors.</td><td>A build runs before any change is believed.</td></tr>
+            <tr><td class="mono">2026-09-01</td><td>Negative differences rendered as <code>$-225.00</code>. Fixed to <code>−$225.00</code> and the screenshots recaptured.</td><td>Reading the screenshot, not the code.</td></tr>
+            <tr><td class="mono">2026-09-01</td><td>A comment in the Azure template claimed it had been validated with a tool that had not been run.</td><td>A claim in a comment gets the same review as code. The tool was installed, the template compiled clean, and the claim rewritten to match.</td></tr>
+            <tr><td class="mono">2026-09-23</td><td>The error handler pointed at a page that did not exist, so any server error would have shown a 404.</td><td>Review of the hosting changes.</td></tr>
+            <tr><td class="mono">2026-09-23</td><td>The demo's cleanup removed old runs by creation time, which ties within a second.</td><td>Review; it now orders by id.</td></tr>
+            <tr><td class="mono">2026-10-02</td><td>The report's tie-out check could never fail: records were loaded only through their results, so a record with no result would not have been loaded at all.</td><td>Writing the check, then asking how it could fail. A test now removes results and expects the bridge to stop tying.</td></tr>
+            <tr><td class="mono">2026-10-02</td><td>The amount-and-date fallback paired gifts that carried a mistyped reference, though it is documented as only for gifts with none. A duplicated $25 settlement was paired with an unrelated $25 gift.</td><td>The first test of <a href="/break">Try to break it</a>. The rule now matches its documentation, and a test holds it there.</td></tr>
+        </tbody>
+    </table>
+</div>
+
+<h2>Read the source</h2>
+<p class="sub">
+    C# on .NET 10: ASP.NET Core MVC, EF Core code-first against SQL Server,
+    xUnit, server-rendered views with a few lines of vanilla JavaScript.
+    The matching engine is plain C# with no database or web dependency.
+    <a href="@Repo">github.com/dustycakes/reconcile</a>
+</p>

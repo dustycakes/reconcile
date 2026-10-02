@@ -1,4 +1,7 @@
-@using Reconcile.Core.Domain
+@using Reconcile.Core.Matching
+@using Reconcile.Core.Reporting
+@using Reconcile.Core.SampleData
+@using Reconcile.Web.Services
 @model ReconciliationRun
 @{
     ViewData["Title"] = $"Run #{Model.Id}";
@@ -9,6 +12,14 @@
     var netDelta = results.Sum(r => r.AmountDelta ?? 0m);
     var findings = results.Where(r => r.Status != MatchStatus.Matched)
         .OrderBy(r => r.Status).ThenBy(r => r.SettlementLine?.SettledOn ?? r.DonationRecord?.ReceivedOn)
+        .ToList();
+    var bridge = ReconciliationBridge.From(Model.SettlementLines, Model.DonationRecords, results);
+    var edits = ReconciliationService.ReadScenario(Model);
+    var isSample = Model.SettlementFileName.StartsWith("sample-");
+    var refusedId = findings.FirstOrDefault(r => r.Note?.StartsWith(FindingNotes.NotPairedOnPurpose) == true)?.Id;
+
+    List<MatchResult> Touching(TamperEdit e) => results
+        .Where(r => r.SettlementLine?.ProcessorRef == e.ProcessorRef || r.DonationRecord?.RecordRef == e.RecordRef)
         .ToList();
 }
 
@@ -23,6 +34,65 @@
 {
     <div class="notes"><strong>Import problems (rows kept out, shown here):</strong>
 @Model.ImportNotes</div>
+}
+
+@if (edits.Count > 0)
+{
+    var caught = edits.Count(e => Touching(e).Any(r => r.Status != MatchStatus.Matched));
+    <section class="edits">
+        <h2>Your edits, and where they landed</h2>
+        <p class="sub">
+            @caught of @edits.Count edits surfaced as findings, and the
+            <a asp-action="Report" asp-route-id="@Model.Id" asp-fragment="bridge">bridge</a>
+            @(bridge.Unexplained == 0 ? "still ties to the cent" : $"is off by ${bridge.Unexplained:N2}").
+            <a href="/break">Try different edits →</a>
+        </p>
+        <div class="tablewrap">
+            <table>
+                <thead><tr><th>Your edit</th><th>Should land as</th><th>Landed as</th></tr></thead>
+                <tbody>
+                    @foreach (var e in edits)
+                    {
+                        var hits = Touching(e).Where(r => r.Status != MatchStatus.Matched).ToList();
+                        <tr class="has-note">
+                            <td>@e.Describe()</td>
+                            <td class="dim">@Tampering.Predicted(e.Kind)</td>
+                            <td>
+                                @if (hits.Count == 0)
+                                {
+                                    <span class="status MissingInCrm">Not caught</span>
+                                }
+                                @foreach (var h in hits)
+                                {
+                                    <span class="status @h.Status">@h.Status.Label()</span>
+                                }
+                            </td>
+                        </tr>
+                        @* One note per edit: the record the edit touched speaks for it. *@
+                        var lead = hits.OrderBy(h => h.DonationRecord?.RecordRef == e.RecordRef ? 0 : 1).FirstOrDefault();
+                        <tr class="note-row"><td colspan="3">@(lead?.Note ?? "The engine treated this record as a clean match.")</td></tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </section>
+}
+else if (isSample)
+{
+    <ol class="guide">
+        <li>
+            <a href="#refused"><b>The gift it refused to guess</b></a>
+            <span>One $200 gift, two $200 settlements a day apart. All three are flagged, and each names the others.</span>
+        </li>
+        <li>
+            <a asp-action="Report" asp-route-id="@Model.Id" asp-fragment="bridge"><b>The bridge</b></a>
+            <span>Settled gross walked to the CRM total through the findings. Unexplained: $@bridge.Unexplained.ToString("N2").</span>
+        </li>
+        <li>
+            <a href="/break"><b>Try to break it</b></a>
+            <span>Change, delete or duplicate records yourself and see what the engine makes of them.</span>
+        </li>
+    </ol>
 }
 
 <div class="tiles" id="tiles">
@@ -72,7 +142,7 @@
             @foreach (var r in findings.Concat(results.Where(x => x.Status == MatchStatus.Matched)))
             {
                 var s = r.SettlementLine; var d = r.DonationRecord;
-                <tr data-status="@r.Status" hidden="@(r.Status == MatchStatus.Matched)" class="@(r.Note is null ? "" : "has-note")">
+                <tr data-status="@r.Status" hidden="@(r.Status == MatchStatus.Matched)" class="@(r.Note is null ? "" : "has-note") @(r.Id == refusedId ? "refused" : "")" id="@(r.Id == refusedId ? "refused" : null)">
                     <td><span class="status @r.Status">@r.Status.Label()</span></td>
                     <td class="mono">@(s?.ProcessorRef ?? d?.ProcessorRef ?? "—")</td>
                     <td class="money">@(s is null ? "—" : $"${s.Gross:N2}")</td>

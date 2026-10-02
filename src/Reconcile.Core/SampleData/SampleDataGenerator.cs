@@ -27,6 +27,9 @@ public static class SampleDataGenerator
 
     public record Generated(List<SettlementLine> Settlements, List<DonationRecord> Donations);
 
+    /// <summary>The first this-many settlements and gifts are the clean pairs, in the same order.</summary>
+    public const int CleanPairCount = 100;
+
     /// <summary>One kind of planted defect and the outcome the engine should give it.</summary>
     public record Planted(string What, int Settlements, int Gifts, string ShouldLandAs);
 
@@ -79,7 +82,7 @@ public static class SampleDataGenerator
             };
 
         // 100 clean pairs — the boring majority a healthy month is made of.
-        for (var i = 0; i < 100; i++)
+        for (var i = 0; i < CleanPairCount; i++)
         {
             var on = Day();
             var amount = Gift();

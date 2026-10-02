@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Reconcile.Web.Data;
 
@@ -11,9 +12,11 @@ using Reconcile.Web.Data;
 namespace Reconcile.Web.Migrations
 {
     [DbContext(typeof(ReconcileDbContext))]
-    partial class ReconcileDbContextModelSnapshot : ModelSnapshot
+    [Migration("20261002161035_AddRunScenario")]
+    partial class AddRunScenario
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder

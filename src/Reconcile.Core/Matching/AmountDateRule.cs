@@ -29,7 +29,11 @@ public class AmountDateRule : IMatchRule
     {
         var claimedLines = new HashSet<int>();
 
-        foreach (var donation in unmatchedDonations)
+        // Only gifts with no reference at all. A gift that carries a reference the
+        // processor doesn't know is a keying problem to fix, not a gift to re-pair
+        // by amount: pairing it here once matched a duplicated settlement to an
+        // unrelated gift of the same size.
+        foreach (var donation in unmatchedDonations.Where(d => string.IsNullOrWhiteSpace(d.ProcessorRef)))
         {
             var candidates = unmatchedSettlements
                 .Where(s => !claimedLines.Contains(s.Id)

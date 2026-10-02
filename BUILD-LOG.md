@@ -180,3 +180,40 @@ probable-match note ("the same amount 1 day apart") was rewritten.
 **Verified:** 18 tests green (6 new). Migration applied against SQL Server in
 Docker; sample run created through the browser in demo mode; run page,
 filters and report checked at desktop and phone widths.
+
+---
+
+## 2026-10-02: Session 6 — let the reviewer break it
+
+**Why:** a fixed sample with a fixed answer key cannot tell a working engine
+from hard-coded output. The demo needed a way for a stranger to hand it data
+nobody prepared.
+
+**Landed:**
+
+- *Try to break it* (`/break`, `Tampering.cs`): five kinds of edit (change a
+  gift's amount, delete a gift, delete a settlement, clear a gift's
+  reference, post a settlement twice), each aimed at a clean pair the
+  visitor picks, applied to a freshly generated month that then goes through
+  the ordinary CSV import and engine. The run page shows each edit, the
+  outcome predicted for it, and the finding it produced. Edits are stored on
+  the run as JSON (fourth migration, `AddRunScenario`); nothing else a
+  visitor sends is kept. Demo mode keeps five runs.
+- A note for duplicated settlements: the copy is flagged as a likely double
+  settlement instead of advising a gift entry.
+- A three-step guide on sample runs: the refused guess, the bridge, the
+  break-it page.
+- *How it was built* (`/built`): each CLAUDE.md rule beside the test that
+  holds it, and the dated record of what review and testing caught.
+
+**What testing caught:** the first tampering test found that the
+amount-and-date rule, documented as the fallback for gifts with no
+reference, also paired gifts that carried a mistyped one. A duplicated $25
+settlement was paired with an unrelated $25 gift. The rule now considers
+only ref-less gifts, with a test; the sample month's counts did not change.
+
+**Verified:** 25 tests green (7 new). Migration applied against SQL Server in
+Docker. In the browser, in demo mode: an edited run caught 5 of 5 edits and
+the bridge tied; a repeated gift was refused with a message; at phone width
+the pages have no sideways scroll. Dustin's review of sessions 5 and 6 is
+still to come.

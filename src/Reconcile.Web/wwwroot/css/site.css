@@ -30,7 +30,7 @@ a { color: var(--pine); }
 
 /* chrome */
 .topbar {
-  display: flex; align-items: baseline; gap: 2rem;
+  display: flex; flex-wrap: wrap; align-items: baseline; gap: 0.4rem 2rem;
   padding: 0.9rem 1.5rem;
   background: var(--surface);
   border-bottom: 2px solid var(--pine);
@@ -39,7 +39,7 @@ a { color: var(--pine); }
   font-family: var(--mono); font-weight: 700; letter-spacing: 0.18em;
   color: var(--ink); text-decoration: none; font-size: 0.95rem;
 }
-.topbar nav { display: flex; gap: 1.25rem; }
+.topbar nav { display: flex; flex-wrap: wrap; gap: 0.3rem 1.25rem; }
 .topbar nav a { color: var(--ink-2); text-decoration: none; font-size: 0.9rem; }
 .topbar nav a:hover { color: var(--pine); }
 
@@ -53,6 +53,7 @@ a { color: var(--pine); }
 h1 { font-size: 1.5rem; margin: 0 0 0.35rem; }
 h2 { font-size: 1.1rem; margin: 1.8rem 0 0.6rem; }
 .sub { color: var(--ink-2); margin: 0 0 1.4rem; max-width: 60ch; }
+.sub.mono-sub { max-width: none; }
 
 /* front page */
 .hero { padding: 0.5rem 0 0.75rem; }
@@ -60,6 +61,27 @@ h2 { font-size: 1.1rem; margin: 1.8rem 0 0.6rem; }
 .hero .sub { font-size: 1rem; }
 .actions { display: flex; flex-wrap: wrap; align-items: center; gap: 0.6rem 1.1rem; }
 .actions form { margin: 0; }
+
+/* first-run guide */
+.guide { list-style: none; counter-reset: step; padding: 0; margin: 1.2rem 0 0.4rem;
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr)); gap: 0.75rem; }
+.guide li { counter-increment: step; background: var(--pine-soft); border-radius: 4px; padding: 0.75rem 0.9rem; }
+.guide li::before { content: counter(step); font-family: var(--mono); font-weight: 700; color: var(--pine); margin-right: 0.4rem; }
+.guide a { text-decoration: none; }
+.guide span { display: block; color: var(--ink-2); font-size: 0.82rem; margin-top: 0.2rem; }
+tr:target td, tr.refused:target + tr.note-row td { background: var(--warn-soft); }
+
+/* try to break it */
+.break fieldset { min-width: 0; border: 1px solid var(--rule); background: var(--surface); border-radius: 4px; margin: 0 0 0.75rem; padding: 0.8rem 1rem; }
+.break .edit-on { font-weight: 600; display: block; margin-bottom: 0.45rem; }
+.break .edit-body { display: flex; flex-wrap: wrap; gap: 0.5rem 1rem; align-items: center; }
+.break select { font: inherit; font-size: 0.85rem; width: 100%; max-width: 34rem; min-width: 0; padding: 0.25rem; }
+.break input[type=number] { font: inherit; width: 8rem; padding: 0.2rem 0.3rem; }
+.break .amount { font-size: 0.85rem; color: var(--ink-2); }
+.break .predict { margin: 0.45rem 0 0; font-size: 0.8rem; color: var(--ink-3); }
+.edits .status { margin-right: 0.3rem; }
+code { font-family: var(--mono); font-size: 0.78rem; background: var(--ground); padding: 0.05rem 0.25rem; border-radius: 2px; }
+table.rules td:first-child, table.caught td:nth-child(2) { min-width: 14rem; }
 
 /* buttons + forms */
 .btn {

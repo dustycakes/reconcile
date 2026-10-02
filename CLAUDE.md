@@ -42,6 +42,12 @@ record appears in exactly one result — is enforced by test
   links to the specific rows behind it. A number you can't act on is not
   information. Every result other than a clean match carries a `Note`
   (`FindingNotes.cs`) saying why it landed there and what to check.
+- **Only ref-less gifts pair on amount and date.** A gift carrying a
+  reference the processor doesn't know is a keying problem to report, not a
+  gift to re-pair (`AmountDate_LeavesGiftsThatCarryAReference_ToBeFixed_NotRePaired`).
+- **The demo's claims are tested.** The front page's answer key and the
+  predictions on "Try to break it" (`Tampering.cs`) each have a test; change
+  the behavior and the claim together.
 - **The report ties out.** `ReconciliationBridge` walks settled gross to the
   CRM total through the findings; its unexplained difference is zero, and a
   test (`Bridge_TiesSettledGrossToCrmTotal_ToTheCent`) keeps it there.

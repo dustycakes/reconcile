@@ -92,6 +92,19 @@ public class MatchEngineTests
     }
 
     [Fact]
+    public void AmountDate_LeavesGiftsThatCarryAReference_ToBeFixed_NotRePaired()
+    {
+        // Found by tampering: a duplicated $25 settlement was paired with an
+        // unrelated $25 gift whose reference had been mistyped.
+        var results = new MatchEngine().Run(
+            [Line(1, "TXN-1", 25m, "2026-08-04")],
+            [Gift(1, "TXN-TYPO", 25m, "2026-08-04")]);
+
+        Assert.DoesNotContain(results, r => r.Status == MatchStatus.ProbableMatch);
+        Assert.Equal(2, results.Count);
+    }
+
+    [Fact]
     public void AmountDate_OutsideWindow_DoesNotMatch()
     {
         var results = new MatchEngine().Run(

@@ -15,8 +15,8 @@ public sealed class DemoOptions
     public bool MigrateOnStartup { get; set; }
 
     /// <summary>
-    /// In demo mode, keep only this many most recent runs. Sample runs come from a
-    /// fixed seed and repeat exactly, so a long history adds nothing.
+    /// In demo mode, keep only this many most recent runs. Plain sample runs repeat
+    /// exactly (fixed seed); edited runs are each visitor's own and short-lived.
     /// </summary>
-    public int KeepRuns { get; set; } = 3;
+    public int KeepRuns { get; set; } = 5;
 }

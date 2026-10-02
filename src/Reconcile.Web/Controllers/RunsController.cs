@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using Reconcile.Core.Domain;
+using Reconcile.Core.SampleData;
 using Reconcile.Web.Data;
 using Reconcile.Web.Services;
 
@@ -67,14 +68,45 @@ public class RunsController : Controller
     public async Task<IActionResult> CreateSample()
     {
         var run = await _service.RunSampleAsync();
-        if (_demo.DemoMode)
-        {
-            // Every visitor's click adds a run; keep the list short. Deleting a run
-            // cascades to its lines, records and results.
-            var keep = await _db.Runs.OrderByDescending(r => r.Id).Take(_demo.KeepRuns).Select(r => r.Id).ToListAsync();
-            await _db.Runs.Where(r => !keep.Contains(r.Id)).ExecuteDeleteAsync();
-        }
+        await TrimDemoRuns();
         return RedirectToAction(nameof(Details), new { id = run.Id });
+    }
+
+    [HttpGet("/break")]
+    public IActionResult Break() => View(BreakForm.Suggested(CleanPairs()));
+
+    [HttpPost("/break")]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> Break(BreakForm form)
+    {
+        var edits = form.ToEdits();
+        ReconciliationRun run;
+        try
+        {
+            run = await _service.RunTamperedAsync(edits);
+        }
+        catch (ArgumentException ex)
+        {
+            ModelState.AddModelError("", ex.Message);
+            form.Pairs = CleanPairs();
+            return View(form);
+        }
+        await TrimDemoRuns();
+        return RedirectToAction(nameof(Details), new { id = run.Id });
+    }
+
+    [HttpGet("/built")]
+    public IActionResult Built() => View();
+
+    private static List<Tampering.CleanPair> CleanPairs() => Tampering.CleanPairs(SampleDataGenerator.Generate());
+
+    // Every visitor's click adds a run; keep the list short. Deleting a run
+    // cascades to its lines, records and results.
+    private async Task TrimDemoRuns()
+    {
+        if (!_demo.DemoMode) return;
+        var keep = await _db.Runs.OrderByDescending(r => r.Id).Take(_demo.KeepRuns).Select(r => r.Id).ToListAsync();
+        await _db.Runs.Where(r => !keep.Contains(r.Id)).ExecuteDeleteAsync();
     }
 
     public IActionResult Error() => View();

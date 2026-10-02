@@ -8,7 +8,7 @@ to fix.
 ![Findings dashboard: 100 matched, 6 probable, 3 amount mismatches, 6 missing in CRM, 5 missing at processor](docs/findings.png)
 
 **Live demo: [reconcile.mennie.dev](https://reconcile.mennie.dev).** Click
-*Run the sample month*. The hosted copy runs sample
+*Run the sample month*, then *Try to break it*. The hosted copy runs sample
 data only; uploads are switched off there. It is self-hosted on a small Linux
 box behind a Cloudflare Tunnel, so the first request after a quiet spell can
 take a few seconds.
@@ -41,6 +41,18 @@ conventions file every AI coding session loads first.
    it.
 
 ![The same run filtered to settlements the CRM never recorded](docs/findings-filtered.png)
+
+6. **Try to break it.** Change a gift's amount, delete a gift or a
+   settlement, clear a reference, or post a settlement twice, on gifts you
+   pick. The edited month goes through the same import and engine as an
+   upload, and the run shows each edit beside where it landed. The first test
+   of this page found a real bug (see the build log, session 6).
+
+![An edited run: each visitor edit beside the finding it produced](docs/edited-run.png)
+
+7. **How it was built.** A page in the app maps each rule in
+   [CLAUDE.md](CLAUDE.md) to the test that enforces it, and lists what
+   review and testing caught, with dates.
 
 5. **Report.** A print-ready reconciliation: totals on both sides, fees
    withheld, a bridge from the processor's settled gross to the CRM total

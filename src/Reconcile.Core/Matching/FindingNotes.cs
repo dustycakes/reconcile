@@ -10,9 +10,12 @@ namespace Reconcile.Core.Matching;
 /// settlements can name the gift. A finding without a reason is a count, and a
 /// count you can't act on is not information.
 /// </summary>
-internal static class FindingNotes
+public static class FindingNotes
 {
-    public static void Annotate(List<MatchResult> results, int windowDays)
+    /// <summary>Opens every note on a record the engine declined to pair because two candidates fit equally well.</summary>
+    public const string NotPairedOnPurpose = "Not paired on purpose";
+
+    internal static void Annotate(List<MatchResult> results, int windowDays)
     {
         var openLines = results.Where(r => r.Status == MatchStatus.MissingInCrm)
             .Select(r => r.SettlementLine!).ToList();
@@ -49,12 +52,20 @@ internal static class FindingNotes
 
         string MissingInCrm(SettlementLine s)
         {
+            var twin = results.FirstOrDefault(r => r.SettlementLine is { } other && other.Id != s.Id
+                && r.DonationRecord is not null
+                && string.Equals(other.ProcessorRef.Trim(), s.ProcessorRef.Trim(), StringComparison.OrdinalIgnoreCase));
+            if (twin is not null)
+                return $"Reference {s.ProcessorRef} appears more than once in the settlement file, and another line " +
+                       $"already matched gift {twin.DonationRecord!.RecordRef}. Likely a double settlement: " +
+                       "confirm with the processor before entering a gift.";
+
             var rival = openGifts.FirstOrDefault(d => IsBlank(d.ProcessorRef) && Fits(s, d));
             if (rival is not null)
             {
                 var others = openLines.Where(l => l.Id != s.Id && Fits(l, rival)).Select(l => l.ProcessorRef).ToList();
                 if (others.Count > 0)
-                    return $"Not paired on purpose. Gift {rival.RecordRef} ({Money(rival.Amount)}) fits this settlement " +
+                    return $"{NotPairedOnPurpose}. Gift {rival.RecordRef} ({Money(rival.Amount)}) fits this settlement " +
                            $"and {Refs(others)} equally well, so neither was claimed. Decide which by hand.";
             }
             return $"Settled in batch {s.BatchId} with no gift in the CRM. Enter the gift with reference {s.ProcessorRef}.";
@@ -72,7 +83,7 @@ internal static class FindingNotes
                 0 => $"No reference keyed, and nothing settled for {Money(d.Amount)} within {windowDays} days. " +
                      "Likely a check or cash gift: confirm it against the bank deposit.",
                 1 => $"No reference keyed. {candidates[0]} fits by amount and date, but no rule paired them. Review by hand.",
-                _ => $"Not paired on purpose. {candidates.Count} settlements fit this gift by amount and date " +
+                _ => $"{NotPairedOnPurpose}. {candidates.Count} settlements fit this gift by amount and date " +
                      $"({Refs(candidates)}). Picking one would be a guess; decide by hand and key its reference.",
             };
         }

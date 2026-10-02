@@ -1,0 +1,74 @@
+@using Reconcile.Core.SampleData
+@model Reconcile.Web.BreakForm
+@{
+    ViewData["Title"] = "Try to break it";
+
+    async Task Picker(string name, string? selected)
+    {
+        await Task.CompletedTask;
+        <select name="@name" aria-label="Which gift">
+            @foreach (var p in Model.Pairs)
+            {
+                <option value="@p.ProcessorRef" selected="@(p.ProcessorRef == selected)">
+                    @p.ProcessorRef · @p.RecordRef · @p.Donor · $@p.Amount.ToString("N2") · @p.ReceivedOn.ToString("MMM d")
+                </option>
+            }
+        </select>
+    }
+}
+
+<h1>Try to break it</h1>
+<p class="sub">
+    Plant your own defects in the sample month. Each edit below starts on a
+    random clean gift; change the gift, the amount, or switch an edit off. The
+    edited month goes through the same CSV import and engine as an upload, and
+    the run page shows where each edit landed. Nothing you choose is kept beyond
+    the run itself.
+</p>
+
+@if (!ViewData.ModelState.IsValid)
+{
+    <div class="error">
+        @foreach (var e in ViewData.ModelState.Values.SelectMany(v => v.Errors)) { <div>@e.ErrorMessage</div> }
+    </div>
+}
+
+<form method="post" action="/break" class="break">
+    @Html.AntiForgeryToken()
+
+    <fieldset>
+        <label class="edit-on"><input type="checkbox" name="ChangeAmount" value="true" checked="@Model.ChangeAmount" /> Key a different amount on a gift in the CRM</label>
+        <div class="edit-body">
+            @{ await Picker("ChangeAmountRef", Model.ChangeAmountRef); }
+            <label class="amount">new amount $<input type="number" name="NewAmount" step="0.01" min="0.01" max="1000000" value="@Model.NewAmount?.ToString("0.00")" /></label>
+        </div>
+        <p class="predict">Should land as: @Tampering.Predicted(TamperKind.ChangeGiftAmount)</p>
+    </fieldset>
+
+    <fieldset>
+        <label class="edit-on"><input type="checkbox" name="DeleteGift" value="true" checked="@Model.DeleteGift" /> Delete a gift from the CRM</label>
+        <div class="edit-body">@{ await Picker("DeleteGiftRef", Model.DeleteGiftRef); }</div>
+        <p class="predict">Should land as: @Tampering.Predicted(TamperKind.DeleteGift)</p>
+    </fieldset>
+
+    <fieldset>
+        <label class="edit-on"><input type="checkbox" name="DeleteSettlement" value="true" checked="@Model.DeleteSettlement" /> Delete a settlement from the processor file</label>
+        <div class="edit-body">@{ await Picker("DeleteSettlementRef", Model.DeleteSettlementRef); }</div>
+        <p class="predict">Should land as: @Tampering.Predicted(TamperKind.DeleteSettlement)</p>
+    </fieldset>
+
+    <fieldset>
+        <label class="edit-on"><input type="checkbox" name="BlankReference" value="true" checked="@Model.BlankReference" /> Clear the processor reference on a gift, as if it were keyed by hand</label>
+        <div class="edit-body">@{ await Picker("BlankReferenceRef", Model.BlankReferenceRef); }</div>
+        <p class="predict">Should land as: @Tampering.Predicted(TamperKind.BlankGiftReference)</p>
+    </fieldset>
+
+    <fieldset>
+        <label class="edit-on"><input type="checkbox" name="Duplicate" value="true" checked="@Model.Duplicate" /> Post a settlement twice</label>
+        <div class="edit-body">@{ await Picker("DuplicateRef", Model.DuplicateRef); }</div>
+        <p class="predict">Should land as: @Tampering.Predicted(TamperKind.DuplicateSettlement)</p>
+    </fieldset>
+
+    <button class="btn" type="submit">Run the month with my edits</button>
+    <a href="/break" class="dim" style="margin-left:1rem">or deal new random gifts</a>
+</form>

@@ -15,6 +15,12 @@ public class ReconciliationRun
     /// <summary>Import problems, one per line — recorded on the run, never swallowed.</summary>
     public string? ImportNotes { get; set; }
 
+    /// <summary>
+    /// The visitor's edits to the sample month, as JSON, when this run came from
+    /// "try to break it". Null for plain sample runs and uploads.
+    /// </summary>
+    public string? Scenario { get; set; }
+
     public List<SettlementLine> SettlementLines { get; set; } = [];
     public List<DonationRecord> DonationRecords { get; set; } = [];
     public List<MatchResult> MatchResults { get; set; } = [];
