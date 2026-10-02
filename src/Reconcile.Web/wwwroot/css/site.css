@@ -81,7 +81,11 @@ tr:target td, tr.refused:target + tr.note-row td { background: var(--warn-soft);
 .break .predict { margin: 0.45rem 0 0; font-size: 0.8rem; color: var(--ink-3); }
 .edits .status { margin-right: 0.3rem; }
 code { font-family: var(--mono); font-size: 0.78rem; background: var(--ground); padding: 0.05rem 0.25rem; border-radius: 2px; }
-table.rules td:first-child, table.caught td:nth-child(2) { min-width: 14rem; }
+table.rules td:first-child { min-width: 14rem; }
+.caught-list { display: grid; gap: 0.75rem; max-width: 52rem; }
+.caught-list div { background: var(--surface); border: 1px solid var(--rule); border-left: 3px solid var(--pine);
+  border-radius: 4px; padding: 0.8rem 1rem; color: var(--ink-2); }
+.caught-list b { display: block; color: var(--ink); margin-bottom: 0.2rem; }
 
 /* buttons + forms */
 .btn {

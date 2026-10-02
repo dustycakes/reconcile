@@ -8,8 +8,7 @@
     Reconcile is a demonstration of AI-assisted development with review
     discipline. Claude Code proposed the project, designed it and wrote the
     code. Dustin Mennie picked the target, reviewed what landed and decided what
-    shipped. No C# had been written by the author before the first session, on
-    2026-09-01.
+    shipped. No C# had been written by the author before this project.
 </p>
 
 <h2>A conventions file, and something that checks each rule</h2>
@@ -58,25 +57,26 @@
     </table>
 </div>
 
-<h2>What checking caught</h2>
+<h2>Two bugs the checks caught</h2>
 <p class="sub">
-    The useful record of an AI-assisted build is what went wrong and how it was
-    found. From the <a href="@Repo/blob/main/BUILD-LOG.md">build log</a>:
+    A check is only worth something if it can fail. These two did, before
+    anyone used the result.
 </p>
-<div class="tablewrap">
-    <table class="caught">
-        <thead><tr><th>Date</th><th>What was wrong</th><th>How it was found</th></tr></thead>
-        <tbody>
-            <tr><td class="mono">2026-09-01</td><td>Removing the template's unused <code>Models</code> folder broke an import in every view: ten identical compile errors.</td><td>A build runs before any change is believed.</td></tr>
-            <tr><td class="mono">2026-09-01</td><td>Negative differences rendered as <code>$-225.00</code>. Fixed to <code>−$225.00</code> and the screenshots recaptured.</td><td>Reading the screenshot, not the code.</td></tr>
-            <tr><td class="mono">2026-09-01</td><td>A comment in the Azure template claimed it had been validated with a tool that had not been run.</td><td>A claim in a comment gets the same review as code. The tool was installed, the template compiled clean, and the claim rewritten to match.</td></tr>
-            <tr><td class="mono">2026-09-23</td><td>The error handler pointed at a page that did not exist, so any server error would have shown a 404.</td><td>Review of the hosting changes.</td></tr>
-            <tr><td class="mono">2026-09-23</td><td>The demo's cleanup removed old runs by creation time, which ties within a second.</td><td>Review; it now orders by id.</td></tr>
-            <tr><td class="mono">2026-10-02</td><td>The report's tie-out check could never fail: records were loaded only through their results, so a record with no result would not have been loaded at all.</td><td>Writing the check, then asking how it could fail. A test now removes results and expects the bridge to stop tying.</td></tr>
-            <tr><td class="mono">2026-10-02</td><td>The amount-and-date fallback paired gifts that carried a mistyped reference, though it is documented as only for gifts with none. A duplicated $25 settlement was paired with an unrelated $25 gift.</td><td>The first test of <a href="/break">Try to break it</a>. The rule now matches its documentation, and a test holds it there.</td></tr>
-            <tr><td class="mono">2026-10-02</td><td>A gift entered twice in the CRM was told its reference was "not in this settlement file". The reference was there; it had matched the first copy.</td><td>Reading each note against every path that can produce it. The note now says the gift was likely entered twice, and a test holds it.</td></tr>
-        </tbody>
-    </table>
+<div class="caught-list">
+    <div>
+        <b>Try to break it found one on its first run.</b>
+        The amount-and-date rule is meant only for gifts with no reference, but
+        it was also pairing gifts that carried a mistyped one: a duplicated $25
+        settlement was matched to an unrelated $25 gift. The rule now does what
+        its documentation says, and a test holds it there.
+    </div>
+    <div>
+        <b>The report's tie-out could not fail.</b>
+        Records were loaded only through their results, so a record the engine
+        dropped would never have been loaded, and the bridge would still have
+        shown $0.00. Records now load in their own right, and a test removes
+        results and expects the bridge to stop tying.
+    </div>
 </div>
 
 <h2>Read the source</h2>
