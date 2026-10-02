@@ -62,6 +62,18 @@ public class NotesAndBridgeTests
     }
 
     [Fact]
+    public void GiftEnteredTwice_SaysSo_InsteadOfClaimingTheReferenceIsMissing()
+    {
+        var results = new MatchEngine().Run(
+            [Line(1, "TXN-5", 40m)],
+            [Gift(1, "TXN-5", 40m), Gift(2, "TXN-5", 40m)]);
+
+        var second = Assert.Single(results, r => r.Status == MatchStatus.MissingInProcessor);
+        Assert.Contains("already matched gift NS-1", second.Note);
+        Assert.DoesNotContain("not in this settlement file", second.Note);
+    }
+
+    [Fact]
     public void Bridge_TiesSettledGrossToCrmTotal_ToTheCent()
     {
         var results = SampleResults(out var data);

@@ -74,8 +74,16 @@ public static class FindingNotes
         string MissingAtProcessor(DonationRecord d)
         {
             if (!IsBlank(d.ProcessorRef))
+            {
+                var taken = results.FirstOrDefault(r => r.DonationRecord is { } other && other.Id != d.Id
+                    && r.SettlementLine is not null
+                    && string.Equals(r.SettlementLine.ProcessorRef.Trim(), d.ProcessorRef!.Trim(), StringComparison.OrdinalIgnoreCase));
+                if (taken is not null)
+                    return $"Reference {d.ProcessorRef!.Trim()} already matched gift {taken.DonationRecord!.RecordRef}. " +
+                           "Likely the same gift entered twice in the CRM: check before the second one posts.";
                 return $"Reference {d.ProcessorRef!.Trim()} is not in this settlement file. " +
                        "Check the gift entry for a mistyped reference, or look for it in the next period.";
+            }
 
             var candidates = openLines.Where(l => Fits(l, d)).Select(l => l.ProcessorRef).ToList();
             return candidates.Count switch

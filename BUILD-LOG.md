@@ -211,8 +211,12 @@ amount-and-date rule, documented as the fallback for gifts with no
 reference, also paired gifts that carried a mistyped one. A duplicated $25
 settlement was paired with an unrelated $25 gift. The rule now considers
 only ref-less gifts, with a test; the sample month's counts did not change.
+Re-reading every note against the path that produces it then found a false
+message: a gift entered twice in the CRM told the reviewer its reference was
+"not in this settlement file", when the reference was there and had matched
+the first copy. The note now says the gift was likely entered twice.
 
-**Verified:** 25 tests green (7 new). Migration applied against SQL Server in
+**Verified:** 26 tests green (8 new). Migration applied against SQL Server in
 Docker. In the browser, in demo mode: an edited run caught 5 of 5 edits and
 the bridge tied; a repeated gift was refused with a message; at phone width
 the pages have no sideways scroll. Dustin's review of sessions 5 and 6 is
